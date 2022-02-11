@@ -91,9 +91,5 @@ func (r *journalReader) start() error {
 }
 
 func (r *journalReader) stop() error {
-	if err := r.cmd.Process.Kill(); err != nil {
-		return err
-	}
-
-	return nil
+	return r.cmd.Process.Kill()
 }

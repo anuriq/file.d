@@ -82,7 +82,7 @@ func pluginConfig(opts ...string) *Config {
 		OffsetsFile:         filepath.Join(offsetsDir, offsetsFile),
 		PersistenceMode:     "async",
 		OffsetsOp:           op,
-		MaintenanceInterval: "100ms",
+		MaintenanceInterval: "1s",
 	}
 
 	_ = cfg.Parse(config, map[string]int{"gomaxprocs": runtime.GOMAXPROCS(0)})
@@ -138,13 +138,13 @@ func getInputInfo(opts ...string) *pipeline.InputPluginInfo {
 	input, _ := Factory()
 	return &pipeline.InputPluginInfo{
 		PluginStaticInfo: &pipeline.PluginStaticInfo{
-			Type:    "",
+			Type:    "file",
 			Factory: nil,
 			Config:  pluginConfig(opts...),
 		},
 		PluginRuntimeInfo: &pipeline.PluginRuntimeInfo{
 			Plugin: input,
-			ID:     "",
+			ID:     "file",
 		},
 	}
 }
@@ -186,7 +186,7 @@ func addDataFile(file *os.File, data []byte) {
 }
 
 func addBytes(file string, data []byte, isLine bool, sync bool) {
-	f, err := os.OpenFile(file, os.O_APPEND|os.O_WRONLY, perm)
+	f, err := os.OpenFile(file, os.O_APPEND|os.O_WRONLY|syscall.O_DIRECT, perm)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -1119,11 +1119,12 @@ func BenchmarkLightJsonReadPar(b *testing.B) {
 		for f := 0; f < files; f++ {
 			file := createTempFile()
 			addBytes(file, content, false, false)
+			logger.Infof("Populated file %s", file)
 		}
-		logger.Infof("%s", filesDir)
+		logger.Infof("Prepared dir %s", filesDir)
 
 		bytes := int64(files * lines * len(json))
-		logger.Infof("will read %dMb", bytes/1024/1024)
+		logger.Infof("Bench will read %dMb", bytes/1024/1024)
 		b.SetBytes(bytes)
 	}
 
@@ -1131,7 +1132,7 @@ func BenchmarkLightJsonReadPar(b *testing.B) {
 	b.StopTimer()
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
-		p, _, output := test.NewPipelineMock(nil, "passive", "perf")
+		p, output := test.NewPipelineMock2(nil, "passive")
 
 		f, err := os.MkdirTemp("", "off")
 		if err != nil {

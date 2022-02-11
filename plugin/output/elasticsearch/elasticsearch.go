@@ -32,6 +32,7 @@ type Plugin struct {
 	batcher      *pipeline.Batcher
 	controller   pipeline.OutputPluginController
 	mu           *sync.Mutex
+	outFn        func(event *pipeline.Event)
 }
 
 //! config-params
@@ -147,6 +148,10 @@ func (p *Plugin) Stop() {
 }
 
 func (p *Plugin) Out(event *pipeline.Event) {
+	if p.outFn != nil {
+		p.outFn(event)
+	}
+
 	p.batcher.Add(event)
 }
 
@@ -257,4 +262,9 @@ func (p *Plugin) maintenance(_ *pipeline.WorkerData) {
 	p.mu.Lock()
 	p.time = time.Now().Format(p.config.TimeFormat)
 	p.mu.Unlock()
+}
+
+//> It sets up a hook to make sure the test event passes successfully to output.
+func (p *Plugin) SetOutFn(fn func(event *pipeline.Event)) { //*
+	p.outFn = fn
 }

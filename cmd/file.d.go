@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"os/signal"
+	"runtime"
 	"runtime/debug"
 	"syscall"
 
@@ -69,6 +70,7 @@ func main() {
 	insaneJSON.StartNodePoolSize = pipeline.DefaultJSONNodePoolSize
 
 	_, _ = maxprocs.Set(maxprocs.Logger(logger.Debugf))
+	logger.Infof("GOMAXPROCS: %d", runtime.GOMAXPROCS(0))
 
 	go listenSignals()
 	longpanic.Go(start)

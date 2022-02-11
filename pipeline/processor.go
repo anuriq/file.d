@@ -61,10 +61,8 @@ type processor struct {
 	busyActions      []bool
 	busyActionsTotal int
 	actionWatcher    *actionWatcher
-	waitOrPanic      func(msgStr string)
 	recoverFromPanic func()
 
-	heartbeatCh   chan *stream
 	metricsValues []string
 }
 

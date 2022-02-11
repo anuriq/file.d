@@ -44,8 +44,7 @@ func (p *Plugin) SetOutFn(fn func(event *pipeline.Event)) { //*
 	p.outFn = fn
 }
 
-func (p *Plugin) Stop() {
-}
+func (p *Plugin) Stop() {}
 
 func (p *Plugin) Out(event *pipeline.Event) {
 	if p.outFn != nil {
